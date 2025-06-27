@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { PageEndpoint } from 'Frontend/generated/endpoints.js';
+import DOMPurify from 'dompurify';
 
 export default function GeneratedView() {
   const { slug } = useParams();
@@ -14,7 +15,10 @@ export default function GeneratedView() {
 useEffect(() => {
   if (page?.styleContent) {
     const style = document.createElement('style');
-    style.innerHTML = page.styleContent;
+    style.textContent = DOMPurify.sanitize(page.styleContent, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+    });
     document.head.appendChild(style);
     return () => {
       document.head.removeChild(style);
@@ -26,7 +30,10 @@ useEffect(() => {
 useEffect(() => {
   if (page?.scriptContent) {
     const script = document.createElement('script');
-    script.innerHTML = page.scriptContent;
+    script.textContent = DOMPurify.sanitize(page.scriptContent, {
+      ALLOWED_TAGS: [],
+      ALLOWED_ATTR: [],
+    });
     document.body.appendChild(script);
     return () => {
       document.body.removeChild(script);
@@ -41,7 +48,9 @@ useEffect(() => {
       {page.base64Image && (
         <img src={`data:image/png;base64,${page.base64Image}`} alt="Uploaded" style={{ maxWidth: '100%' }} />
       )}
-      <div dangerouslySetInnerHTML={{ __html: page.htmlContent }} />
+      <div
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.htmlContent) }}
+      />
     </div>
   ) : (
     <p>Loading…</p>
